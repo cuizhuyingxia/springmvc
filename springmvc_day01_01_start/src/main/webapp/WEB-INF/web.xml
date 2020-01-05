@@ -1,0 +1,49 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+
+  <!-- 配置解决中文乱码的过滤器 Filter-->
+  <filter>
+    <filter-name>characterEncodingFilter</filter-name>
+    <!-- springMVC提供的过滤器 -->
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <!-- 配置初始化参数，将请求的数据转换为UTF-8格式 -->
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>characterEncodingFilter</filter-name>
+    <!-- 拦截所有请求 -->
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- 配置前端控制器 servlet -->
+  <servlet>
+    <!-- 配置servlet类 -->
+    <servlet-name>dispatcherServlet</servlet-name>
+    <!-- springmvc提供的servlet类-->
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!-- 创建DispatcherServlet对象时，加载配置文件，创建Ioc容器 -->
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:springmvc.xml</param-value>
+    </init-param>
+    <!-- 默认情况下，当客户端第一次发送请求时，DispatcherServlet对象会被创建，
+        现在我们可以配置load-on-startup参数的值为1，即当服务器启动时，就创建DispatcherServlet对象，
+          这样的好处是，在服务器启动时，就能加载配置文件，创建Ioc容器，
+            因为我们配置了在创建DispatcherServlet对象时，就加载配置文件，创建Ioc容器 -->
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <!-- 配置servlet映射 -->
+    <servlet-name>dispatcherServlet</servlet-name>
+    <!-- 拦截所有的请求 -->
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+  
+</web-app>

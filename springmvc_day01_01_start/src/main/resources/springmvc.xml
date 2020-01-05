@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 添加注解所在的包，告知spring在创建容器时，去扫描这个包下的注解配置 -->
+    <context:component-scan base-package="cn.itcast"/>
+
+    <!-- 配置视图解析器 -->
+    <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 当执行完请求映射的方法后，会返回一个字符串
+                视图解析器的作用就是，根据返回的字符串到/WEB-INF/pages目录下，
+                    找到对应的文件（文件后缀名为.jsp）-->
+        <property name="prefix" value="/WEB-INF/pages"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- 配置自定义类型转换器 -->
+    <!-- ConversionServiceFactoryBean为springMVC提供的类型转换器工厂对象，
+            我们只需要为它的属性converters，注入我们自定义的类型转换器的全限定类名即可，
+                这样就将我们自定义的类型转换器注册到了springMVC中 -->
+    <bean id="conversionServiceFactoryBean" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <bean class="cn.itcast.utils.StringToDateConverter"/>
+            </set>
+        </property>
+    </bean>
+
+    <!-- 开启对springmvc框架的注解支持
+            添加标签<mvc:annotation-driven/>
+                不过它还有其它的作用，就是帮我们自动配置处理器映射器和处理器适配器 -->
+    <mvc:annotation-driven conversion-service="conversionServiceFactoryBean"/>
+                            <!-- conversion-service作用：使我们自定义的类型转换器生效 -->
+</beans>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!-- spring的配置文件 -->
+
+    <!-- 开启注解扫描（只扫描service层和dao层，不扫描controller层） -->
+    <context:component-scan base-package="cn.itcast">
+        <!-- 不扫描controller层对应的注解 -->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- Spring整合Mybatis框架
+            整合思路：创建AccountDao接口的代理对象，并存入Ioc容器，
+                        然后在Service层就可以获取AccountDao接口的代理对象，继而调用AccountDao接口中的方法
+            步骤：
+                1. 配置连接池
+                2. 配置SqlSessionFactory工厂对象，需要传入连接池
+                    有了SqlSessionFactory工厂对象后，就可以生产SqlSession对象了（spring会自动帮我们生产SqlSession对象）
+                3. 扫描AccountDao接口所在的包，然后使用SqlSession对象创建AccountDao接口的代理对象，并存入Ioc容器；以及解析AccountDao接口中的注解（获取sql语句和返回值类型），
+                    或者是解析该包下的xml映射文件（获取sql语句和返回值类型），因为映射文件所在的包和接口所在的包是同名的，所以可以解析到xml映射文件
+                     创建代理对象和解析操作，spring会自动帮我们完成
+                -->
+    <!-- 配置连接池（c3p0） -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/ssm?useUnicode=true&amp;characterEncoding=utf-8&amp;useSSL=false"/>
+        <property name="user" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+    <!-- 配置SqlSessionFactory工厂对象 -->
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+     </bean>
+    <!-- 扫描AccountDao接口所在的包 -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="cn.itcast.dao"/>
+    </bean>
+
+    <!-- 配置spring的声明式事务管理 -->
+    <!-- 1. 配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!-- 2. 配置事务通知 -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <!-- 5. 配置事务的属性-->
+        <tx:attributes>
+            <!-- find*  表示对业务层的查询方法配置事务属性，注意查询方法名称必须是find开头的，否则匹配不到；还有就是find*比*的优先级高 -->
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>   <!-- 不一定会有事务，只读 -->
+            <!-- 如果使用通配符，则表示对业务层的所有方法配置事务属性 -->
+            <tx:method name="*" propagation="REQUIRED" read-only="false"/>      <!-- 一定会有事务，读写 -->
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置AOP -->
+    <aop:config>
+        <!-- 3. 配置切入点表达式 -->
+        <aop:pointcut id="pt1" expression="execution(* cn.itcast.service.impl.*.*(..))"/>
+        <!-- 4. 建立事务通知和切入点表达式的对应关系 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pt1"/>
+    </aop:config>
+
+
+</beans>

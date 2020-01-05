@@ -1,0 +1,59 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+
+  <!-- 配置解决中文乱码的过滤器 -->
+  <filter>
+    <filter-name>characterEncodingFilter</filter-name>
+    <!-- springMVC提供的过滤器 -->
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <!-- 设置初始化参数，将请求的数据转换为utf-8格式 -->
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>utf-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>characterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- 配置监听器 -->
+  <listener>
+    <!-- springmvc提供的监听器ContextLoaderListener，它会去监听ServletContext域对象的创建和销毁
+           而ServletContext域对象在服务器启动时会被创建，所以我们可以让监听器在监听到ServletContext域对象被创建时，
+             加载spring的配置文件，从而创建Ioc容器 -->
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  <!-- 不过监听器ContextLoaderListener默认只会加载WEB-INF目录下的applicationContext.xml配置文件
+         而我们的spring配置文件则是在类路径下的，所以我们就需要做一些配置，让监听器ContextLoaderListener去加载类路径下的spring配置文件 -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <!-- 告知监听器，加载类路径下的spring配置文件-->
+    <param-value>classpath:applicationContext.xml</param-value>
+  </context-param>
+
+  <!-- 配置前端控制器 -->
+  <servlet>
+    <servlet-name>dispatcherServlet</servlet-name>
+    <!-- springmvc提供的Servlet类 -->
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!-- 设置初始化参数，使得在创建DispatcherServlet对象时，就加载springmvc配置文件，并创建Ioc容器 -->
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:springMVC.xml</param-value>
+    </init-param>
+    <!-- 默认情况下，当客户端第一次发送请求时，DispatcherServlet对象会被创建，
+           现在我们可以设置load-on-startup参数的值为1，即当服务器启动时，就创建DispatcherServlet对象
+             这样的好处是，在服务器启动时，DispatcherServlet对象就被创建了，相应的springmvc配置文件也就被加载了，随之Ioc容器也就被创建了 -->
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>dispatcherServlet</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+</web-app>
